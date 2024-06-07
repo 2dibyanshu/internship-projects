@@ -1,0 +1,30 @@
+Bootstrap: docker
+From: ubuntu:jammy
+
+%post
+    # Update and install dependencies
+    apt-get update && apt-get upgrade -y
+    apt-get install -y gdebi-core wget nano
+
+    # Install MPI and other dependencies
+    apt-get install -y python3-dev gfortran mpi-default-bin mpi-default-dev openssh-client python3
+
+    # Download NWChem packages
+    wget https://github.com/nwchemgit/nwchem/releases/download/v7.2.0-release/nwchem-data_7.2.0-2_all.ubuntu_jammy.deb
+    wget https://github.com/nwchemgit/nwchem/releases/download/v7.2.0-release/nwchem_7.2.0-2_amd64.ubuntu_jammy.deb
+
+    # Install NWChem packages using gdebi to automatically handle dependencies
+    gdebi -n nwchem-data_7.2.0-2_all.ubuntu_jammy.deb
+    gdebi -n nwchem_7.2.0-2_amd64.ubuntu_jammy.deb
+
+    # Clean up
+    rm nwchem-data_7.2.0-2_all.ubuntu_jammy.deb
+    rm nwchem_7.2.0-2_amd64.ubuntu_jammy.deb
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+%environment
+    export PATH=$PATH:/usr/bin/nwchem
+
+%runscript
+    exec /bin/bash "$@"

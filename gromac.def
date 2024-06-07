@@ -1,0 +1,49 @@
+Bootstrap: docker
+From: ubuntu:jammy
+
+%post
+    # Update and install dependencies
+    apt update && apt install -y \
+        python3 \
+        build-essential \
+        cmake \
+        gcc \
+        g++ \
+        libfftw3-dev \
+        libgsl-dev \
+        wget \
+        openmpi-bin \
+        openmpi-common \
+        openmpi-doc \
+        libopenmpi-dev \
+        nano
+
+    # Download GROMACS source
+    export GROMACS_VERSION=2024.1
+    wget https://ftp.gromacs.org/gromacs/gromacs-${GROMACS_VERSION}.tar.gz
+    tar -xzvf gromacs-${GROMACS_VERSION}.tar.gz
+    cd gromacs-${GROMACS_VERSION}
+
+    # Configure and compile GROMACS
+    mkdir build
+    cd build
+    cmake .. -DGMX_MPI=ON -DGMX_BUILD_OWN_FFTW=ON -DGMX_OPENMP=ON -DCMAKE_INSTALL_PREFIX=/usr/local/gromacs
+    make -j$(nproc)
+    make install
+
+    # Clean up
+    cd /
+    rm -rf gromacs-${GROMACS_VERSION}*
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+%environment
+    # Set environment variables to use GROMACS
+    export PATH=/usr/local/gromacs/bin:$PATH
+    source /usr/local/gromacs/bin/GMXRC
+
+%startscriptgg
+    echo "Container is ready"
+
+%runscript
+    exec /bin/bash "$@"

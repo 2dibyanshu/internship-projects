@@ -1,0 +1,15 @@
+start h2o
+
+memory total 100 mb
+
+geometry units angstroms
+  O  0.000000  0.000000  0.000000
+  H  0.757160  0.586260  0.000000
+  H -0.757160  0.586260  0.000000
+end
+
+basis
+  * library 6-31g
+end
+
+task scf optimize
